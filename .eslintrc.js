@@ -1,5 +1,11 @@
 module.exports = {
-  extends: "airbnb-base",
+  extends: [
+    "airbnb-base",
+    "eslint:recommended",
+    "plugin:jest/style",
+  ],
+  plugins: ["jest"],
+  parser: "@babel/eslint-parser",
   env: {
     browser: true,
     node: true,
