@@ -1,5 +1,5 @@
 {
-  "name": "game-server",
+  "name": "socketeer",
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
