@@ -7,8 +7,8 @@ describe("server", () => {
   beforeEach(() => {
     port = 3333;
     eventHandlers = new Map();
-    eventHandlers.set("connection", jest.fn(/*() => console.log("CONNECTION")*/));
-    eventHandlers.set("listening", jest.fn(/*() => console.log("LISTENING")*/));
+    eventHandlers.set("connection", jest.fn());
+    eventHandlers.set("listening", jest.fn());
     eventHandlers.set("close", jest.fn());
     eventHandlers.set("error", jest.fn());
   });

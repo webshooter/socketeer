@@ -2,7 +2,7 @@ import net from "net";
 
 const noop = () => {};
 const defaultEventHandlers = new Map();
-defaultEventHandlers.set("connection", () => console.log("CONNECTION"));
+defaultEventHandlers.set("connection", noop);
 defaultEventHandlers.set("close", noop);
 defaultEventHandlers.set("error", noop);
 defaultEventHandlers.set("listening", noop);
