@@ -18,6 +18,7 @@ export default class Server {
     this.eventHandlers = eventHandlers;
 
     this.netServer = net.createServer();
+    this.netServer.maxConnections = this.maxConnections;
     eventHandlers
       .forEach((handler, event) => this.netServer.on(event, handler));
   }

@@ -13,6 +13,26 @@ describe("server", () => {
     eventHandlers.set("error", jest.fn());
   });
 
+  it("uses the maxConnections value when provided", async () => {
+    const maxConnections = 4;
+    const server = new Server({
+      port,
+      eventHandlers,
+      maxConnections,
+    });
+    expect(server.maxConnections).toBe(maxConnections);
+    await server.close();
+  });
+
+  it("return the default maxConnections value when not provided", async () => {
+    const server = new Server({
+      port,
+      eventHandlers,
+    });
+    expect(server.maxConnections).toBeGreaterThan(0);
+    await server.close();
+  });
+
   describe("event-handling", () => {
     let server;
     let client;
