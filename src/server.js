@@ -1,4 +1,6 @@
 import net from "net";
+import { v4 as uuidv4 } from "uuid";
+import Client from "./client";
 
 const noop = () => {};
 const defaultEventHandlers = new Map();
@@ -17,10 +19,20 @@ export default class Server {
     this.maxConnections = maxConnections;
     this.eventHandlers = eventHandlers;
 
+    this.clients = [];
+
     this.netServer = net.createServer();
     this.netServer.maxConnections = this.maxConnections;
     eventHandlers
       .forEach((handler, event) => this.netServer.on(event, handler));
+
+    // default handlers
+    this.netServer.on("connection", (socket) => {
+      socket.id = uuidv4();
+      const client = new Client({ socket });
+
+      this.clients = [...this.clients, client];
+    });
   }
 
   async listen() {
