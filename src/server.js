@@ -2,12 +2,22 @@ import net from "net";
 import { v4 as uuidv4 } from "uuid";
 import Client from "./client";
 
+// TODO: Do we really need these?
 const noop = () => {};
 const defaultEventHandlers = new Map();
 defaultEventHandlers.set("connection", noop);
 defaultEventHandlers.set("close", noop);
-defaultEventHandlers.set("error", noop);
 defaultEventHandlers.set("listening", noop);
+// eslint-disable-next-line no-console
+defaultEventHandlers.set("error", (err) => console.error(err));
+
+// TODO: codify standard notification funcitons
+// and move them into their own file(s)
+const notifications = new Map();
+notifications.set("GREET", ({ client }) => ({
+  key: "greet",
+  id: client.id,
+}));
 
 export default class Server {
   constructor({
@@ -32,6 +42,9 @@ export default class Server {
       const client = new Client({ socket });
 
       this.clients = [...this.clients, client];
+      client.notify({
+        message: notifications.get("GREET")({ client }),
+      });
     });
   }
 
