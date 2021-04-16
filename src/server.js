@@ -46,4 +46,15 @@ export default class Server {
       }
     });
   }
+
+  async getConnections() {
+    return new Promise((resolve, reject) => {
+      this.netServer.getConnections((error, count) => {
+        if (error) {
+          reject(error);
+        }
+        resolve(count);
+      });
+    });
+  }
 }
