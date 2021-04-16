@@ -2,41 +2,107 @@ import net from "net";
 import Server from "../src/server";
 
 describe("server", () => {
-  let port;
+  let defaultServer;
+  let defaultPort;
   let eventHandlers;
-  beforeEach(() => {
-    port = 3333;
+  beforeEach(async () => {
+    defaultPort = 3334;
     eventHandlers = new Map();
     eventHandlers.set("connection", jest.fn());
     eventHandlers.set("listening", jest.fn());
     eventHandlers.set("close", jest.fn());
     eventHandlers.set("error", jest.fn());
-  });
 
-  it("uses the maxConnections value when provided", async () => {
-    const maxConnections = 4;
-    const server = new Server({
-      port,
-      eventHandlers,
-      maxConnections,
-    });
-    expect(server.maxConnections).toBe(maxConnections);
-    await server.close();
-  });
-
-  it("return the default maxConnections value when not provided", async () => {
-    const server = new Server({
-      port,
+    defaultServer = new Server({
+      port: defaultPort,
       eventHandlers,
     });
-    expect(server.maxConnections).toBeGreaterThan(0);
-    await server.close();
+  });
+
+  afterEach(async () => {
+    if (defaultServer) {
+      await defaultServer.close();
+    }
+  });
+
+  describe("connections", () => {
+    it("uses the maxConnections value when provided", async () => {
+      const maxConnections = 4;
+      const server = new Server({
+        port: defaultPort,
+        eventHandlers,
+        maxConnections,
+      });
+      expect(server.maxConnections).toBe(maxConnections);
+      await server.close();
+    });
+
+    it("return the default maxConnections value when not provided", async () => {
+      expect(defaultServer.maxConnections).toBeGreaterThan(0);
+    });
+
+    it("getConnections returns the current connections count", async () => {
+      const sockets = [
+        new net.Socket(),
+        new net.Socket(),
+        new net.Socket(),
+      ];
+
+      await defaultServer.listen();
+      expect(await defaultServer.getConnections()).toBe(0);
+
+      await Promise.all(sockets
+        .map((socket) => new Promise((resolve) => socket.connect(defaultPort, () => resolve()))));
+
+      expect(await defaultServer.getConnections()).toBe(sockets.length);
+
+      sockets.forEach((socket) => socket.destroy());
+    });
+  });
+
+  describe("clients", () => {
+    it("returns the greeting notification upon connection", (done) => {
+      const isValidId = ({ id }) => (new RegExp(/^[0-9A-F]{8}-[0-9A-F]{4}-4[0-9A-F]{3}-[89AB][0-9A-F]{3}-[0-9A-F]{12}$/i)).test(id);
+      const socket = new net.Socket();
+      socket.on("data", (data) => {
+        socket.destroy();
+        const { id, key } = JSON.parse(data.toString());
+        expect(isValidId({ id })).toBe(true);
+        expect(key).toBe("greet");
+        done();
+      });
+
+      defaultServer
+        .listen()
+        .then(() => socket.connect(defaultPort));
+    });
+
+    it("adds client to client list on connection", async () => {
+      const socket = new net.Socket();
+
+      await defaultServer.listen();
+      expect(defaultServer.clients).toHaveLength(0);
+
+      await new Promise((resolve) => {
+        socket.on("data", (data) => {
+          const { key } = JSON.parse(data.toString());
+          if (key === "greet") { resolve(); }
+        });
+        socket.connect(defaultPort);
+      });
+
+      expect(defaultServer.clients).toHaveLength(1);
+
+      socket.destroy();
+    });
   });
 
   describe("event-handling", () => {
     let server;
     let client;
+    let port;
     beforeEach(() => {
+      port = 3331;
       server = new Server({
         port,
         eventHandlers,
