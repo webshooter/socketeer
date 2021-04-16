@@ -60,12 +60,10 @@ export default class Server {
     });
   }
 
-  close() {
+  async close() {
     return new Promise((resolve, reject) => {
       if (this.netServer) {
-        this.netServer.close(() => {
-          resolve(this.netServer);
-        });
+        this.netServer.close(() => resolve(this.netServer));
       } else {
         reject(new Error("Error closing server!"));
       }
