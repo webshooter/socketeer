@@ -31,9 +31,23 @@ export default class Client {
     return this.socket.id;
   }
 
-  notify({ message }) {
-    if (message) {
-      this.socket.write(JSON.stringify(message));
+  notify({ message = {} }) {
+    const response = {
+      clientId: this.socket.id,
+      message,
+    };
+
+    if (this.socket.destroyed) {
+      response.error = "Client socket was closed";
+      return response;
     }
+
+    try {
+      this.socket.write(JSON.stringify(message));
+    } catch (error) {
+      response.error = error.message;
+    }
+
+    return response;
   }
 }
