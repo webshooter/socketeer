@@ -13,5 +13,6 @@ module.exports = {
   },
   rules: {
     quotes: ["error", "double"],
+    "no-param-reassign": ["error", { props: false }],
   },
 };
