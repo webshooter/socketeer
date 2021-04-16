@@ -11,6 +11,20 @@ export default class Client {
     }
 
     this.socket = socket;
+
+    // socket event handlers
+    // TODO figure out what these need to do
+    [
+      "close",
+      "connect",
+      "data",
+      "drain",
+      "end",
+      "error",
+      "lookup",
+      "ready",
+      "timeout",
+    ].forEach((event) => this.socket.on(event, () => {}));
   }
 
   get id() {
