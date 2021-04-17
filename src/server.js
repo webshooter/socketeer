@@ -1,6 +1,7 @@
 import net from "net";
 import { v4 as uuidv4 } from "uuid";
 import Client from "./client";
+import Lobby from "./lobby";
 
 // TODO: Do we really need these?
 const noop = () => {};
@@ -29,7 +30,7 @@ export default class Server {
     this.maxConnections = maxConnections;
     this.eventHandlers = eventHandlers;
 
-    this.clients = [];
+    this.lobby = new Lobby();
 
     this.netServer = net.createServer();
     this.netServer.maxConnections = this.maxConnections;
@@ -41,7 +42,7 @@ export default class Server {
       socket.id = uuidv4();
       const client = new Client({ socket });
 
-      this.clients = [...this.clients, client];
+      this.lobby.addClient({ client });
       client.notify({
         message: notifications.get("GREET")({ client }),
       });

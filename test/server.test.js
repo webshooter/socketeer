@@ -77,11 +77,11 @@ describe("server", () => {
         .then(() => socket.connect(defaultPort));
     });
 
-    it("adds client to client list on connection", async () => {
+    it("adds new clients to the lobby automatically", async () => {
       const socket = new net.Socket();
 
       await defaultServer.listen();
-      expect(defaultServer.clients).toHaveLength(0);
+      expect(defaultServer.lobby.clients).toHaveLength(0);
 
       await new Promise((resolve) => {
         socket.on("data", (data) => {
@@ -91,9 +91,37 @@ describe("server", () => {
         socket.connect(defaultPort);
       });
 
-      expect(defaultServer.clients).toHaveLength(1);
+      expect(defaultServer.lobby.clients).toHaveLength(1);
 
       socket.destroy();
+    });
+
+    it("adds client to client list on connection", async () => {
+      const socket = new net.Socket();
+
+      await defaultServer.listen();
+      expect(defaultServer.lobby.clients).toHaveLength(0);
+
+      await new Promise((resolve) => {
+        socket.on("data", (data) => {
+          const { key } = JSON.parse(data.toString());
+          if (key === "greet") { resolve(); }
+        });
+        socket.connect(defaultPort);
+      });
+
+      expect(defaultServer.lobby.clients).toHaveLength(1);
+
+      socket.destroy();
+    });
+  });
+
+  describe("lobby", () => {
+    it("creates a lobby on server startup", async () => {
+      const { lobby } = defaultServer;
+      expect(lobby).not.toBeNull();
+      expect(lobby).not.toBeUndefined();
+      expect(lobby.name).toBe("LOBBY");
     });
   });
 
