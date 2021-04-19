@@ -22,7 +22,12 @@ export default class Room {
     return this.#clients;
   }
 
-  addClient({ client }) {
+  addClient({ client, sendGreeting = true }) {
+    // TODO: throw an error here?
+    if (!client) {
+      return this.clients;
+    }
+
     this.#clients = [...this.#clients, client];
     if (sendGreeting) {
       const greeting = messages.get(messageKeys.ROOM_GREET);
