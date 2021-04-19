@@ -1,5 +1,6 @@
 import { v4 as uuidv4 } from "uuid";
 import Lobby from "../src/lobby";
+import { keys as messageKeys } from "../src/messages";
 
 describe("Lobby", () => {
   describe("initializing ", () => {
@@ -75,7 +76,13 @@ describe("Lobby", () => {
 
     it("notifies room clients with room close message", async () => {
       lobby.removeRoom(room);
-      clients.forEach((client) => expect(client.notify).toHaveBeenCalledTimes(1));
+      clients
+        .forEach((client) => expect(client.notify).toHaveBeenLastCalledWith({
+          message: {
+            key: messageKeys.ROOM_CLOSING,
+            room: room.toJSON(),
+          },
+        }));
     });
   });
 });
