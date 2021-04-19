@@ -27,7 +27,7 @@ describe("messages", () => {
 
   describe("SERVER_GREET", () => {
     it("returns the message", async () => {
-      const expected = { key: "server-greet", id: client.id };
+      const expected = { key: "server-greet" };
       const message = messages.get(keys.SERVER_GREET);
 
       expect(message({ client })).toEqual(expected);
@@ -36,7 +36,6 @@ describe("messages", () => {
     it("includes the error message when provided", async () => {
       const expected = {
         key: keys.SERVER_GREET,
-        id: client.id,
         error,
       };
       const message = messages.get(keys.SERVER_GREET);
@@ -49,7 +48,6 @@ describe("messages", () => {
     it("returns the message", async () => {
       const expected = {
         key: keys.ROOM_GREET,
-        id: client.id,
         room: room.toJSON(),
       };
       const message = messages.get(keys.ROOM_GREET);
@@ -60,7 +58,6 @@ describe("messages", () => {
     it("includes the error message when provided", async () => {
       const expected = {
         key: keys.ROOM_GREET,
-        id: client.id,
         room: room.toJSON(),
         error,
       };

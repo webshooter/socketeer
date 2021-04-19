@@ -43,7 +43,8 @@ export default class Client {
     }
 
     try {
-      this.socket.write(JSON.stringify(message));
+      message.id = this.socket.id;
+      this.socket.write(`${JSON.stringify(message)}\n`);
     } catch (error) {
       response.error = error.message;
     }

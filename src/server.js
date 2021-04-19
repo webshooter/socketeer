@@ -2,6 +2,7 @@ import net from "net";
 import { v4 as uuidv4 } from "uuid";
 import Client from "./client";
 import Lobby from "./lobby";
+import messages, { keys as messageKeys } from "./messages";
 
 // TODO: Do we really need these?
 const noop = () => {};
@@ -44,7 +45,7 @@ export default class Server {
 
       this.lobby.addClient({ client });
       client.notify({
-        message: notifications.get("GREET")({ client }),
+        message: messages.get(messageKeys.SERVER_GREET)(),
       });
     });
   }
