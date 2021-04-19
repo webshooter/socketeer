@@ -6,7 +6,7 @@ messages.set("SERVER_GREET", ({ client, error }) => ({
 }));
 
 messages.set("ROOM_GREET", ({ client, room, error }) => ({
-  key: "server-greet",
+  key: "room-greet",
   id: client.id,
   error,
   room: {
