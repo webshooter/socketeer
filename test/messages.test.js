@@ -1,7 +1,7 @@
 import net from "net";
 import { v4 as uuidv4 } from "uuid";
 import Client from "../src/client";
-import messages from "../src/messages";
+import messages, { keys } from "../src/messages";
 import Room from "../src/room";
 
 describe("messages", () => {
@@ -28,18 +28,18 @@ describe("messages", () => {
   describe("SERVER_GREET", () => {
     it("returns the message", async () => {
       const expected = { key: "server-greet", id: client.id };
-      const message = messages.get("SERVER_GREET");
+      const message = messages.get(keys.SERVER_GREET);
 
       expect(message({ client })).toEqual(expected);
     });
 
     it("includes the error message when provided", async () => {
       const expected = {
-        key: "server-greet",
+        key: keys.SERVER_GREET,
         id: client.id,
         error,
       };
-      const message = messages.get("SERVER_GREET");
+      const message = messages.get(keys.SERVER_GREET);
 
       expect(message({ client, error })).toEqual(expected);
     });
@@ -48,24 +48,24 @@ describe("messages", () => {
   describe("ROOM_GREET", () => {
     it("returns the message", async () => {
       const expected = {
-        key: "room-greet",
+        key: keys.ROOM_GREET,
         id: client.id,
         room: room.toJSON(),
       };
-      const message = messages.get("ROOM_GREET");
+      const message = messages.get(keys.ROOM_GREET);
 
       expect(message({ client, room })).toEqual(expected);
     });
 
     it("includes the error message when provided", async () => {
       const expected = {
-        key: "room-greet",
+        key: keys.ROOM_GREET,
         id: client.id,
         room: room.toJSON(),
         error,
       };
-      const message = messages.get("ROOM_GREET");
-  
+      const message = messages.get(keys.ROOM_GREET);
+
       expect(message({ client, room, error })).toEqual(expected);
     });
   });

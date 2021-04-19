@@ -1,12 +1,17 @@
+export const keys = {
+  SERVER_GREET: "server-greet",
+  ROOM_GREET: "room-greet",
+};
+
 const messages = new Map();
-messages.set("SERVER_GREET", ({ client, error }) => ({
-  key: "server-greet",
+messages.set(keys.SERVER_GREET, ({ client, error }) => ({
+  key: keys.SERVER_GREET,
   id: client.id,
   error,
 }));
 
-messages.set("ROOM_GREET", ({ client, room, error }) => ({
-  key: "room-greet",
+messages.set(keys.ROOM_GREET, ({ client, room, error }) => ({
+  key: keys.ROOM_GREET,
   id: client.id,
   error,
   room: {
