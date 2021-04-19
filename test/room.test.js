@@ -106,7 +106,7 @@ describe("Room", () => {
     });
 
     describe("using removeClient", () => {
-      it("removes the client frm the room by id", async () => {
+      it("removes the client from the room by id", async () => {
         defaultRoom.addClient({ client: client1 });
         defaultRoom.addClient({ client: client2 });
         defaultRoom.addClient({ client: client3 });
@@ -161,10 +161,10 @@ describe("Room", () => {
         const message = { id: uuidv4(), key: "test-key", data: "test-data" };
         notificationRoom.notifyClients({ message });
 
-        expect(client1.notify).toHaveBeenCalledTimes(1);
-        expect(client2.notify).toHaveBeenCalledTimes(1);
-        expect(client3.notify).toHaveBeenCalledTimes(1);
-        expect(client4.notify).toHaveBeenCalledTimes(1);
+        expect(client1.notify).toHaveBeenLastCalledWith({ message });
+        expect(client2.notify).toHaveBeenLastCalledWith({ message });
+        expect(client3.notify).toHaveBeenLastCalledWith({ message });
+        expect(client4.notify).toHaveBeenLastCalledWith({ message });
       });
 
       it("returns an array indicating notification results", async () => {
@@ -197,10 +197,10 @@ describe("Room", () => {
           clients: [client1, client3, client4],
         });
 
-        expect(client1.notify).toHaveBeenCalledTimes(1);
-        expect(client2.notify).toHaveBeenCalledTimes(0);
-        expect(client3.notify).toHaveBeenCalledTimes(1);
-        expect(client4.notify).toHaveBeenCalledTimes(1);
+        expect(client1.notify).toHaveBeenLastCalledWith({ message });
+        expect(client3.notify).toHaveBeenLastCalledWith({ message });
+        expect(client4.notify).toHaveBeenLastCalledWith({ message });
+        expect(client2.notify).not.toHaveBeenLastCalledWith({ message });
       });
     });
   });
