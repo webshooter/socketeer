@@ -1,4 +1,5 @@
 import { v4 as uuidv4 } from "uuid";
+import messages, { keys as messageKeys } from "./messages";
 
 const idRegEx = new RegExp(/^[0-9A-F]{8}-[0-9A-F]{4}-4[0-9A-F]{3}-[89AB][0-9A-F]{3}-[0-9A-F]{12}$/i);
 const isValidName = ({ name }) => (name && name.toString().length > 0);
@@ -23,6 +24,13 @@ export default class Room {
 
   addClient({ client }) {
     this.#clients = [...this.#clients, client];
+    if (sendGreeting) {
+      const greeting = messages.get(messageKeys.ROOM_GREET);
+      this.notifyClients({
+        message: greeting({ room: this }),
+        clients: [client],
+      });
+    }
     return this.clients;
   }
 
@@ -52,7 +60,7 @@ export default class Room {
     return {
       id: this.id,
       name: this.name,
-      clients: this.#clients,
+      clients: this.#clients.map((client) => client.id),
     };
   }
 }

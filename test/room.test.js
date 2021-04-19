@@ -103,6 +103,16 @@ describe("Room", () => {
           expect.arrayContaining([client4]),
         );
       });
+
+      it("sends a room-greeting to the client by default", async () => {
+        defaultRoom.addClient({ client: client1 });
+        expect(client1.notify).toHaveBeenCalledTimes(1);
+      });
+
+      it("skips the room-greeting when sendGreeting is false", async () => {
+        defaultRoom.addClient({ client: client1, sendGreeting: false });
+        expect(client1.notify).toHaveBeenCalledTimes(0);
+      });
     });
 
     describe("using removeClient", () => {
