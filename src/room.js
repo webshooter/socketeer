@@ -47,4 +47,12 @@ export default class Room {
       return acc;
     }, []);
   }
+
+  toJSON() {
+    return {
+      id: this.id,
+      name: this.name,
+      clients: this.#clients,
+    };
+  }
 }

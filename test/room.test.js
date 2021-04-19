@@ -11,6 +11,12 @@ describe("Room", () => {
     expect(Room.isValidId({ id: uuidv4() })).toBe(true);
   });
 
+  it("toJSON returns the room json", async () => {
+    const room = new Room({ name: "test room" });
+    const { id, name, clients } = room;
+    expect(room.toJSON()).toEqual({ id, name, clients });
+  });
+
   describe("when creating a room", () => {
     it("creates a new room with an id", async () => {
       const { id } = new Room();
