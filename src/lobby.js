@@ -1,8 +1,5 @@
 import Room from "./room";
-
-const messages = {
-  CLOSING_ROOM: { key: "closing-room", message: "this room is closing" },
-};
+import messages, { keys as messageKeys } from "./messages";
 
 const lobbyName = "LOBBY";
 
@@ -29,7 +26,8 @@ export default class Lobby extends Room {
   removeRoom({ id }) {
     const room = this.#rooms.find((r) => id === r.id);
     if (room) {
-      room.notifyClients({ message: messages.CLOSING_ROOM });
+      const message = messages.get(messageKeys.ROOM_CLOSING);
+      room.notifyClients({ message: message({ room }) });
       this.#rooms = this.#rooms
         .filter((r) => room.id !== r.id);
     }
