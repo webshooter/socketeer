@@ -13,14 +13,6 @@ defaultEventHandlers.set("listening", noop);
 // eslint-disable-next-line no-console
 defaultEventHandlers.set("error", (err) => console.error(err));
 
-// TODO: codify standard notification funcitons
-// and move them into their own file(s)
-const notifications = new Map();
-notifications.set("GREET", ({ client }) => ({
-  key: "greet",
-  id: client.id,
-}));
-
 export default class Server {
   constructor({
     eventHandlers = defaultEventHandlers,
