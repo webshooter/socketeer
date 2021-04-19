@@ -13,20 +13,12 @@ messages.set(keys.SERVER_GREET, ({ error } = {}) => ({
 messages.set(keys.ROOM_GREET, ({ error, room } = {}) => ({
   key: keys.ROOM_GREET,
   error,
-  room: {
-    id: room.id,
-    name: room.name,
-    clients: room.clients,
-  },
+  room: room.toJSON(),
 }));
 
 messages.set(keys.ROOM_CLOSING, ({ room } = {}) => ({
   key: keys.ROOM_CLOSING,
-  room: {
-    id: room.id,
-    name: room.name,
-    clients: room.clients,
-  },
+  room: room.toJSON(),
 }));
 
 export default messages;
