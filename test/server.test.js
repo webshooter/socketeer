@@ -21,11 +21,7 @@ describe("server", () => {
     });
   });
 
-  afterEach(async () => {
-    if (defaultServer) {
-      await defaultServer.close();
-    }
-  });
+  afterEach(async () => defaultServer?.close());
 
   describe("connections", () => {
     it("uses the maxConnections value when provided", async () => {
