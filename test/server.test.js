@@ -1,5 +1,7 @@
 import net from "net";
+import split2 from "split2";
 import Server from "../src/server";
+import { keys as messageKeys } from "../src/messages";
 
 describe("server", () => {
   let defaultServer;
@@ -61,16 +63,19 @@ describe("server", () => {
   });
 
   describe("clients", () => {
-    it("returns the greeting notification upon connection", (done) => {
+    it("returns the server greet message upon connection", (done) => {
       const isValidId = ({ id }) => (new RegExp(/^[0-9A-F]{8}-[0-9A-F]{4}-4[0-9A-F]{3}-[89AB][0-9A-F]{3}-[0-9A-F]{12}$/i)).test(id);
       const socket = new net.Socket();
-      socket.on("data", (data) => {
-        socket.destroy();
-        const { id, key } = JSON.parse(data.toString());
-        expect(isValidId({ id })).toBe(true);
-        expect(key).toBe("greet");
-        done();
-      });
+      socket
+        .pipe(split2(JSON.parse))
+        .on("data", ({ id, key, error }) => {
+          if (key === messageKeys.SERVER_GREET) {
+            expect(error).toBeUndefined();
+            expect(isValidId({ id })).toBe(true);
+            socket.destroy();
+            done();
+          }
+        });
 
       defaultServer
         .listen()
@@ -84,10 +89,11 @@ describe("server", () => {
       expect(defaultServer.lobby.clients).toHaveLength(0);
 
       await new Promise((resolve) => {
-        socket.on("data", (data) => {
-          const { key } = JSON.parse(data.toString());
-          if (key === "greet") { resolve(); }
-        });
+        socket
+          .pipe(split2(JSON.parse))
+          .on("data", ({ key }) => {
+            if (key === messageKeys.SERVER_GREET) { resolve(); }
+          });
         socket.connect(defaultPort);
       });
 
@@ -103,10 +109,11 @@ describe("server", () => {
       expect(defaultServer.lobby.clients).toHaveLength(0);
 
       await new Promise((resolve) => {
-        socket.on("data", (data) => {
-          const { key } = JSON.parse(data.toString());
-          if (key === "greet") { resolve(); }
-        });
+        socket
+          .pipe(split2(JSON.parse))
+          .on("data", ({ key }) => {
+            if (key === messageKeys.SERVER_GREET) { resolve(); }
+          });
         socket.connect(defaultPort);
       });
 
