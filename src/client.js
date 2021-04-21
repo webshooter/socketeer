@@ -38,7 +38,7 @@ export default class Client {
       message,
     };
 
-    if (this.socket.destroyed) {
+    if (!this.socket.writable || this.socket.destroyed) {
       response.error = "Client socket was closed";
       return response;
     }
