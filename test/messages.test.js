@@ -5,24 +5,12 @@ import messages, { keys } from "../src/messages";
 import Room from "../src/room";
 
 describe("messages", () => {
-  let client;
   let error;
   let room;
 
   beforeEach(() => {
-    const socket = new net.Socket();
-    socket.id = uuidv4();
-    client = new Client({ socket });
     error = "error message";
     room = new Room({ name: "the room" });
-    [
-      new net.Socket(),
-      new net.Socket(),
-      new net.Socket(),
-    ].forEach((s) => {
-      s.id = uuidv4();
-      room.addClient({ client: new Client({ socket: s }) });
-    });
   });
 
   describe("SERVER_GREET", () => {
@@ -30,7 +18,7 @@ describe("messages", () => {
       const expected = { key: "server-greet" };
       const message = messages.get(keys.SERVER_GREET);
 
-      expect(message({ client })).toEqual(expected);
+      expect(message()).toEqual(expected);
     });
 
     it("includes the error message when provided", async () => {
@@ -40,7 +28,7 @@ describe("messages", () => {
       };
       const message = messages.get(keys.SERVER_GREET);
 
-      expect(message({ client, error })).toEqual(expected);
+      expect(message({ error })).toEqual(expected);
     });
   });
 
@@ -52,7 +40,7 @@ describe("messages", () => {
       };
       const message = messages.get(keys.ROOM_GREET);
 
-      expect(message({ client, room })).toEqual(expected);
+      expect(message({ room })).toEqual(expected);
     });
 
     it("includes the error message when provided", async () => {
@@ -63,7 +51,7 @@ describe("messages", () => {
       };
       const message = messages.get(keys.ROOM_GREET);
 
-      expect(message({ client, room, error })).toEqual(expected);
+      expect(message({ room, error })).toEqual(expected);
     });
   });
 });
