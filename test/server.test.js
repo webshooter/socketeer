@@ -54,7 +54,7 @@ describe("server", () => {
 
       expect(await defaultServer.getConnections()).toBe(sockets.length);
 
-      sockets.forEach((socket) => socket.destroy());
+      sockets.forEach((socket) => socket.end());
     });
   });
 
@@ -68,7 +68,7 @@ describe("server", () => {
           if (key === messageKeys.SERVER_GREET) {
             expect(error).toBeUndefined();
             expect(isValidId({ id })).toBe(true);
-            socket.destroy();
+            socket.end();
             done();
           }
         });
@@ -95,7 +95,7 @@ describe("server", () => {
 
       expect(defaultServer.lobby.clients).toHaveLength(1);
 
-      socket.destroy();
+      socket.end();
     });
 
     it("adds client to client list on connection", async () => {
@@ -115,7 +115,7 @@ describe("server", () => {
 
       expect(defaultServer.lobby.clients).toHaveLength(1);
 
-      socket.destroy();
+      socket.end();
     });
   });
 
@@ -148,6 +148,7 @@ describe("server", () => {
       }
 
       if (client) {
+        client.end();
         client.destroy();
       }
     });
