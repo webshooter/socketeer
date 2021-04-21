@@ -11,9 +11,10 @@ export default class Room {
     return idRegEx.test(id);
   }
 
-  constructor({ name } = {}) {
+  constructor({ name, lobby } = {}) {
     this.id = uuidv4();
     this.createdAt = Date.now();
+    this.lobby = lobby;
     this.name = isValidName({ name })
       ? name
       : `[${this.id}]`;
