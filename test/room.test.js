@@ -1,5 +1,6 @@
 import { v4 as uuidv4 } from "uuid";
 import Room from "../src/room";
+import Client from "../src/client";
 
 const isValidId = ({ id }) => (
   new RegExp(/^[0-9A-F]{8}-[0-9A-F]{4}-4[0-9A-F]{3}-[89AB][0-9A-F]{3}-[0-9A-F]{12}$/i)
@@ -81,10 +82,18 @@ describe("Room", () => {
     let defaultRoom;
     beforeEach(() => {
       defaultRoom = new Room();
-      client1 = { id: uuidv4(), notify: jest.fn(() => true) };
-      client2 = { id: uuidv4(), notify: jest.fn(() => true) };
-      client3 = { id: uuidv4(), notify: jest.fn(() => false) };
-      client4 = { id: uuidv4(), notify: jest.fn(() => true) };
+
+      const fakeSocket = () => ({
+        id: uuidv4(),
+        write: jest.fn(() => true),
+        on: jest.fn(),
+        pipe: () => ({ on: jest.fn() }),
+      });
+
+      client1 = new Client({ socket: fakeSocket() });
+      client2 = new Client({ socket: fakeSocket() });
+      client3 = new Client({ socket: fakeSocket() });
+      client4 = new Client({ socket: fakeSocket() });
     });
 
     describe("using addClient", () => {
@@ -133,13 +142,15 @@ describe("Room", () => {
       });
 
       it("sends a room-greeting to the client by default", async () => {
+        const notifySpy = jest.spyOn(client1, "notify");
         defaultRoom.addClient({ client: client1 });
-        expect(client1.notify).toHaveBeenCalledTimes(1);
+        expect(notifySpy).toHaveBeenCalledTimes(1);
       });
 
       it("skips the room-greeting when sendGreeting is false", async () => {
+        const notifySpy = jest.spyOn(client1, "notify");
         defaultRoom.addClient({ client: client1, sendGreeting: false });
-        expect(client1.notify).toHaveBeenCalledTimes(0);
+        expect(notifySpy).toHaveBeenCalledTimes(0);
       });
     });
 
@@ -158,6 +169,10 @@ describe("Room", () => {
         expect(defaultRoom.clients).toEqual(
           expect.arrayContaining([client3]),
         );
+      });
+
+      it("", async () => {
+        
       });
 
       it("returns the full list of current clients", async () => {
@@ -196,17 +211,27 @@ describe("Room", () => {
       it("sends the messsage to all clients in the room by default", async () => {
         expect(notificationRoom.clients).toHaveLength(4);
 
+        const notifySpyClient1 = jest.spyOn(client1, "notify");
+        const notifySpyClient2 = jest.spyOn(client2, "notify");
+        const notifySpyClient3 = jest.spyOn(client3, "notify");
+        const notifySpyClient4 = jest.spyOn(client4, "notify");
+
         const message = { id: uuidv4(), key: "test-key", data: "test-data" };
         notificationRoom.notifyClients({ message });
 
-        expect(client1.notify).toHaveBeenLastCalledWith({ message });
-        expect(client2.notify).toHaveBeenLastCalledWith({ message });
-        expect(client3.notify).toHaveBeenLastCalledWith({ message });
-        expect(client4.notify).toHaveBeenLastCalledWith({ message });
+        expect(notifySpyClient1).toHaveBeenLastCalledWith({ message });
+        expect(notifySpyClient2).toHaveBeenLastCalledWith({ message });
+        expect(notifySpyClient3).toHaveBeenLastCalledWith({ message });
+        expect(notifySpyClient4).toHaveBeenLastCalledWith({ message });
       });
 
       it("returns an array indicating notification results", async () => {
         expect(notificationRoom.clients).toHaveLength(4);
+
+        notificationRoom.clients.forEach((c) => {
+          c.notify = jest.fn(() => true);
+        });
+        client3.notify = jest.fn(() => false);
 
         const message = { id: uuidv4(), key: "test-key", data: "test-data" };
         const results = notificationRoom.notifyClients({ message });
@@ -229,16 +254,22 @@ describe("Room", () => {
       it("only notifies the clients specified", async () => {
         expect(notificationRoom.clients).toHaveLength(4);
 
+        const notifySpyClient1 = jest.spyOn(client1, "notify");
+        const notifySpyClient2 = jest.spyOn(client2, "notify");
+        const notifySpyClient3 = jest.spyOn(client3, "notify");
+        const notifySpyClient4 = jest.spyOn(client4, "notify");
+
         const message = { id: uuidv4(), key: "test-key", data: "test-data" };
         notificationRoom.notifyClients({
           message,
           clients: [client1, client3, client4],
         });
 
-        expect(client1.notify).toHaveBeenLastCalledWith({ message });
-        expect(client3.notify).toHaveBeenLastCalledWith({ message });
-        expect(client4.notify).toHaveBeenLastCalledWith({ message });
-        expect(client2.notify).not.toHaveBeenLastCalledWith({ message });
+        expect(notifySpyClient1).toHaveBeenLastCalledWith({ message });
+        expect(notifySpyClient3).toHaveBeenLastCalledWith({ message });
+        expect(notifySpyClient4).toHaveBeenLastCalledWith({ message });
+
+        expect(notifySpyClient2).not.toHaveBeenLastCalledWith({ message });
       });
     });
   });

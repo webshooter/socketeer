@@ -1,6 +1,14 @@
 import { v4 as uuidv4 } from "uuid";
+import Client from "../src/client";
 import Lobby from "../src/lobby";
 import { keys as messageKeys } from "../src/messages";
+
+const fakeSocket = () => ({
+  id: uuidv4(),
+  write: jest.fn(() => true),
+  on: jest.fn(),
+  pipe: () => ({ on: jest.fn() }),
+});
 
 describe("Lobby", () => {
   describe("initializing ", () => {
@@ -27,10 +35,10 @@ describe("Lobby", () => {
       expect(lobby.rooms).toHaveLength(0);
 
       const clients = [
-        { id: uuidv4(), notify: jest.fn(() => true) },
-        { id: uuidv4(), notify: jest.fn(() => true) },
-        { id: uuidv4(), notify: jest.fn(() => true) },
-        { id: uuidv4(), notify: jest.fn(() => true) },
+        new Client({ socket: fakeSocket() }),
+        new Client({ socket: fakeSocket() }),
+        new Client({ socket: fakeSocket() }),
+        new Client({ socket: fakeSocket() }),
       ];
 
       const room = lobby.createRoom({ clients });
@@ -50,10 +58,10 @@ describe("Lobby", () => {
     beforeEach(() => {
       lobby = new Lobby();
       clients = [
-        { id: uuidv4(), notify: jest.fn(() => true) },
-        { id: uuidv4(), notify: jest.fn(() => true) },
-        { id: uuidv4(), notify: jest.fn(() => true) },
-        { id: uuidv4(), notify: jest.fn(() => true) },
+        new Client({ socket: fakeSocket() }),
+        new Client({ socket: fakeSocket() }),
+        new Client({ socket: fakeSocket() }),
+        new Client({ socket: fakeSocket() }),
       ];
       lobby.createRoom();
       // create 2 rooms with clients to ensure
@@ -75,14 +83,16 @@ describe("Lobby", () => {
     });
 
     it("notifies room clients with room close message", async () => {
+      const spies = clients.map((client) => jest.spyOn(client, "notify"));
+
       lobby.removeRoom(room);
-      clients
-        .forEach((client) => expect(client.notify).toHaveBeenLastCalledWith({
-          message: {
-            key: messageKeys.ROOM_CLOSING,
-            room: room.toJSON(),
-          },
-        }));
+
+      spies.forEach((spy) => expect(spy).toHaveBeenCalledWith({
+        message: {
+          key: messageKeys.ROOM_CLOSING,
+          room: room.toJSON(),
+        },
+      }));
     });
   });
 });
