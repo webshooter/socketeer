@@ -20,11 +20,12 @@ export default class Client {
       "data",
       "drain",
       "end",
-      "error",
       "lookup",
       "ready",
       "timeout",
     ].forEach((event) => this.socket.on(event, () => {}));
+    // eslint-disable-next-line no-console
+    this.socket.on("error", console.error);
   }
 
   get id() {
