@@ -36,6 +36,7 @@ describe("Client", () => {
       const writeSpy = jest.spyOn(socket, "write");
       const message = { id: uuidv4(), key: "test-key", data: "test-data" };
       const client = new Client({ socket });
+      writeSpy.mockImplementation(() => true);
       client.notify({ message });
 
       expect(writeSpy).toHaveBeenCalledTimes(1);
@@ -54,8 +55,10 @@ describe("Client", () => {
 
     it("returns a notification data packet", async () => {
       const socket = testSocket();
+      const writeSpy = jest.spyOn(socket, "write");
       const message = { id: uuidv4(), key: "test-key", data: "test-dataX" };
       const client = new Client({ socket });
+      writeSpy.mockImplementation(() => true);
       const dataPacket = client.notify({ message });
       expect(dataPacket).toEqual({
         clientId: socket.id,
