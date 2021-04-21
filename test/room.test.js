@@ -13,14 +13,29 @@ describe("Room", () => {
 
   it("toJSON returns the room json", async () => {
     const room = new Room({ name: "test room" });
-    const { id, name, clients } = room;
-    expect(room.toJSON()).toEqual({ id, name, clients });
+    const {
+      id,
+      createdAt,
+      name,
+      clients,
+    } = room;
+    expect(room.toJSON()).toEqual({
+      id,
+      createdAt,
+      name,
+      clients,
+    });
   });
 
   describe("when creating a room", () => {
     it("creates a new room with an id", async () => {
       const { id } = new Room();
       expect(isValidId({ id })).toBe(true);
+    });
+
+    it("creates a new room with a created at timestamp", async () => {
+      const { createdAt } = new Room();
+      expect(createdAt).toBeLessThanOrEqual(Date.now());
     });
 
     it("creates a new room with a default name", async () => {

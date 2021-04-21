@@ -13,6 +13,7 @@ export default class Room {
 
   constructor({ name } = {}) {
     this.id = uuidv4();
+    this.createdAt = Date.now();
     this.name = isValidName({ name })
       ? name
       : `[${this.id}]`;
@@ -64,6 +65,7 @@ export default class Room {
   toJSON() {
     return {
       id: this.id,
+      createdAt: this.createdAt,
       name: this.name,
       clients: this.#clients.map((client) => client.id),
     };
