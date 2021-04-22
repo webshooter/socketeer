@@ -171,10 +171,6 @@ describe("Room", () => {
         );
       });
 
-      it("", async () => {
-        
-      });
-
       it("returns the full list of current clients", async () => {
         expect(defaultRoom.clients).toHaveLength(0);
 
