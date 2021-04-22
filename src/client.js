@@ -1,3 +1,5 @@
+import { EventEmitter } from "events";
+
 const idRegEx = new RegExp(/^[0-9A-F]{8}-[0-9A-F]{4}-4[0-9A-F]{3}-[89AB][0-9A-F]{3}-[0-9A-F]{12}$/i);
 
 export default class Client {
@@ -11,6 +13,7 @@ export default class Client {
     }
 
     this.socket = socket;
+    this.emitter = new EventEmitter();
 
     // socket event handlers
     // TODO figure out what these need to do
