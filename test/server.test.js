@@ -59,23 +59,26 @@ describe("server", () => {
   });
 
   describe("clients", () => {
-    it("returns the server greet message upon connection", (done) => {
+    it("returns the server greet message upon connection", async () => {
       const isValidId = ({ id }) => (new RegExp(/^[0-9A-F]{8}-[0-9A-F]{4}-4[0-9A-F]{3}-[89AB][0-9A-F]{3}-[0-9A-F]{12}$/i)).test(id);
       const socket = new net.Socket();
-      socket
-        .pipe(split2(JSON.parse))
-        .on("data", ({ id, key, error }) => {
-          if (key === messageKeys.SERVER_GREET) {
-            expect(error).toBeUndefined();
-            expect(isValidId({ id })).toBe(true);
-            socket.end();
-            done();
-          }
-        });
 
-      defaultServer
-        .listen()
-        .then(() => socket.connect(defaultPort));
+      await defaultServer.listen();
+      await new Promise((resolve) => {
+        socket
+          .pipe(split2(JSON.parse))
+          .on("data", ({ id, key, error }) => {
+            if (key === messageKeys.SERVER_GREET) {
+              expect(error).toBeUndefined();
+              expect(isValidId({ id })).toBe(true);
+              socket.end();
+              resolve();
+            }
+          });
+
+        socket.connect(defaultPort);
+      });
+    });
 
     it("returns the server's client object by id", async () => {
       await defaultServer.listen();
