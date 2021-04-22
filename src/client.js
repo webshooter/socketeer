@@ -34,6 +34,10 @@ export default class Client {
     this.socket
       .pipe(split2(JSON.parse))
       .on("data", ({ key, data }) => {
+        if (key === "leave-room") {
+          this.emitter.emit("leave-room");
+        }
+
         this.socket.write(`${JSON.stringify({
           key,
           data,
