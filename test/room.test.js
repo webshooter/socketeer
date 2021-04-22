@@ -7,6 +7,13 @@ const isValidId = ({ id }) => (
     .test(id)
 );
 
+const fakeSocket = () => ({
+  id: uuidv4(),
+  write: jest.fn(() => true),
+  on: jest.fn(),
+  pipe: () => ({ on: jest.fn() }),
+});
+
 describe("Room", () => {
   it("isValidId enforces id format", async () => {
     expect(Room.isValidId({ id: uuidv4() })).toBe(true);
@@ -69,13 +76,6 @@ describe("Room", () => {
     let defaultRoom;
     beforeEach(() => {
       defaultRoom = new Room();
-
-      const fakeSocket = () => ({
-        id: uuidv4(),
-        write: jest.fn(() => true),
-        on: jest.fn(),
-        pipe: () => ({ on: jest.fn() }),
-      });
 
       client1 = new Client({ socket: fakeSocket() });
       client2 = new Client({ socket: fakeSocket() });
