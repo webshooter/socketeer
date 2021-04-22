@@ -14,6 +14,8 @@ defaultEventHandlers.set("listening", noop);
 defaultEventHandlers.set("error", (err) => console.error(err));
 
 export default class Server {
+  #clients = new Map();
+
   constructor({
     eventHandlers = defaultEventHandlers,
     maxConnections = 10,
@@ -30,16 +32,30 @@ export default class Server {
     eventHandlers
       .forEach((handler, event) => this.netServer.on(event, handler));
 
-    // default handlers
     this.netServer.on("connection", (socket) => {
+      // assign the socket an id
       socket.id = uuidv4();
+
+      // create a new client with the socket
       const client = new Client({ socket });
 
+      // add new client to the server's client map
+      this.#clients.set(client.id, client);
+
+      // put new client in the lobby
       this.lobby.addClient({ client });
       client.notify({
         message: messages.get(messageKeys.SERVER_GREET)(),
       });
     });
+  }
+
+  get clients() {
+    return this.#clients;
+  }
+
+  getClient({ id }) {
+    return this.#clients.get(id);
   }
 
   async listen() {

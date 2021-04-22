@@ -76,6 +76,28 @@ describe("server", () => {
       defaultServer
         .listen()
         .then(() => socket.connect(defaultPort));
+
+    it("returns the server's client object by id", async () => {
+      await defaultServer.listen();
+
+      const socket = new net.Socket();
+
+      const clientId = await new Promise((resolve) => {
+        socket
+          .pipe(split2(JSON.parse))
+          .on("data", ({ id, key }) => {
+            if (key === messageKeys.SERVER_GREET) {
+              resolve(id);
+            }
+          });
+
+        socket.connect(defaultPort);
+      });
+
+      const client = defaultServer.getClient({ id: clientId });
+      expect(client).not.toBeNull();
+      expect(client.socket.id).toBe(clientId);
+      socket.end();
     });
 
     it("adds new clients to the lobby automatically", async () => {
