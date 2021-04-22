@@ -11,10 +11,10 @@ export default class Room {
     return idRegEx.test(id);
   }
 
-  constructor({ name, lobby } = {}) {
+  constructor({ name } = {}) {
     this.id = uuidv4();
     this.createdAt = Date.now();
-    this.lobby = lobby;
+    this.emitter = new EventEmitter();
     this.name = isValidName({ name })
       ? name
       : `[${this.id}]`;

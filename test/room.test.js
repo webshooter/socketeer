@@ -44,19 +44,6 @@ describe("Room", () => {
       expect(name).toEqual(`[${id}]`);
     });
 
-    it("doesn't set a lobby if one isn't provided", async () => {
-      const { id, lobby } = new Room();
-      expect(isValidId({ id })).toBe(true);
-      expect(lobby).toBeUndefined();
-    });
-
-    it("sets a lobby if one is provided", async () => {
-      const testLobby = new Room({ name: "LOBBY" });
-      const { id, lobby } = new Room({ lobby: testLobby });
-      expect(isValidId({ id })).toBe(true);
-      expect(lobby.toJSON()).toEqual(testLobby.toJSON());
-    });
-
     it("creates a new room using the provided name", async () => {
       const { name } = new Room({ name: "Test Room" });
       expect(name).toEqual("Test Room");
