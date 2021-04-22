@@ -256,4 +256,47 @@ describe("Room", () => {
       });
     });
   });
+
+  describe("when handling events", () => {
+    it("removes clients on leave-room event from client", async () => {
+      const client = new Client({ socket: fakeSocket() });
+      const room = new Room();
+      expect(room.clients).toHaveLength(0);
+
+      room.addClient({ client });
+      expect(room.clients).toHaveLength(1);
+      expect(room.clients[0].id).toBe(client.id);
+
+      client.emitter.emit("leave-room");
+      expect(room.clients).toHaveLength(0);
+    });
+
+    it("removes any existing leave-room listeners from the client", async () => {
+      const client = new Client({ socket: fakeSocket() });
+      const room = new Room();
+
+      const removeAllListenersSpy = jest.spyOn(client.emitter, "removeAllListeners");
+
+      room.addClient({ client });
+      client.emitter.emit("leave-room");
+
+      expect(removeAllListenersSpy)
+        .toHaveBeenCalledWith("leave-room");
+    });
+
+    it("emits the remove-client event", async () => {
+      const client = new Client({ socket: fakeSocket() });
+      const room = new Room();
+
+      room.emitter = {
+        emit: jest.fn(),
+      };
+
+      room.addClient({ client });
+      client.emitter.emit("leave-room");
+
+      expect(room.emitter.emit)
+        .toHaveBeenCalledWith("remove-client", client);
+    });
+  });
 });
