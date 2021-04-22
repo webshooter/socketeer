@@ -1,4 +1,5 @@
 import { EventEmitter } from "events";
+import split2 from "split2";
 
 const idRegEx = new RegExp(/^[0-9A-F]{8}-[0-9A-F]{4}-4[0-9A-F]{3}-[89AB][0-9A-F]{3}-[0-9A-F]{12}$/i);
 
@@ -29,6 +30,17 @@ export default class Client {
     ].forEach((event) => this.socket.on(event, () => {}));
     // eslint-disable-next-line no-console
     this.socket.on("error", console.error);
+
+    this.socket
+      .pipe(split2(JSON.parse))
+      .on("data", ({ key, data }) => {
+        this.socket.write(`${JSON.stringify({
+          key,
+          data,
+          id: this.socket.id,
+          type: "ACK",
+        })}\n`);
+      });
   }
 
   get id() {
