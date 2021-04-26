@@ -11,8 +11,11 @@ const fakeSocket = () => ({
   id: uuidv4(),
   write: jest.fn(() => true),
   on: jest.fn(),
+  removeAllListeners: () => {},
   pipe: () => ({ on: jest.fn() }),
 });
+
+const sortById = (array) => array.sort((a, b) => a.id - b.id);
 
 describe("Room", () => {
   it("isValidId enforces id format", async () => {
@@ -104,28 +107,20 @@ describe("Room", () => {
         expect(defaultRoom.clients).toHaveLength(0);
 
         let currentClients = defaultRoom.addClient({ client: client1 });
-        expect(currentClients).toHaveLength(1);
+        expect(sortById(currentClients))
+          .toEqual(sortById([client1]));
 
         currentClients = defaultRoom.addClient({ client: client2 });
-        expect(currentClients).toHaveLength(2);
+        expect(sortById(currentClients))
+          .toEqual(sortById([client1, client2]));
 
         currentClients = defaultRoom.addClient({ client: client3 });
-        expect(currentClients).toHaveLength(3);
+        expect(sortById(currentClients))
+          .toEqual(sortById([client1, client2, client3]));
 
         currentClients = defaultRoom.addClient({ client: client4 });
-        expect(currentClients).toHaveLength(4);
-        expect(currentClients).toEqual(
-          expect.arrayContaining([client1]),
-        );
-        expect(currentClients).toEqual(
-          expect.arrayContaining([client2]),
-        );
-        expect(currentClients).toEqual(
-          expect.arrayContaining([client3]),
-        );
-        expect(currentClients).toEqual(
-          expect.arrayContaining([client4]),
-        );
+        expect(sortById(currentClients))
+          .toEqual(sortById([client1, client2, client3, client4]));
       });
 
       it("sends a room-greeting to the client by default", async () => {
@@ -146,16 +141,12 @@ describe("Room", () => {
         defaultRoom.addClient({ client: client1 });
         defaultRoom.addClient({ client: client2 });
         defaultRoom.addClient({ client: client3 });
-        expect(defaultRoom.clients).toHaveLength(3);
+        expect(sortById(defaultRoom.clients))
+          .toEqual(sortById([client1, client2, client3]));
 
         defaultRoom.removeClient({ id: client2.id });
-        expect(defaultRoom.clients).toHaveLength(2);
-        expect(defaultRoom.clients).toEqual(
-          expect.arrayContaining([client1]),
-        );
-        expect(defaultRoom.clients).toEqual(
-          expect.arrayContaining([client3]),
-        );
+        expect(sortById(defaultRoom.clients))
+          .toEqual(sortById([client1, client3]));
       });
 
       it("returns the full list of current clients", async () => {
@@ -165,19 +156,21 @@ describe("Room", () => {
         defaultRoom.addClient({ client: client2 });
         defaultRoom.addClient({ client: client3 });
         defaultRoom.addClient({ client: client4 });
-        expect(defaultRoom.clients).toHaveLength(4);
 
-        let currentClients = defaultRoom.removeClient({ id: client1.id });
-        expect(currentClients).toHaveLength(3);
+        expect(sortById(defaultRoom.clients))
+          .toEqual(sortById([client1, client2, client3, client4]));
 
-        currentClients = defaultRoom.removeClient({ id: client2.id });
-        expect(currentClients).toHaveLength(2);
+        expect(sortById(defaultRoom.removeClient({ id: client1.id })))
+          .toEqual(sortById([client2, client3, client4]));
 
-        currentClients = defaultRoom.removeClient({ id: client3.id });
-        expect(currentClients).toHaveLength(1);
+        expect(sortById(defaultRoom.removeClient({ id: client2.id })))
+          .toEqual(sortById([client3, client4]));
 
-        currentClients = defaultRoom.removeClient({ id: client4.id });
-        expect(currentClients).toHaveLength(0);
+        expect(sortById(defaultRoom.removeClient({ id: client3.id })))
+          .toEqual(sortById([client4]));
+
+        expect(sortById(defaultRoom.removeClient({ id: client4.id })))
+          .toEqual(sortById([]));
       });
     });
 
@@ -211,27 +204,20 @@ describe("Room", () => {
       it("returns an array indicating notification results", async () => {
         expect(notificationRoom.clients).toHaveLength(4);
 
-        notificationRoom.clients.forEach((c) => {
-          c.notify = jest.fn(() => true);
+        notificationRoom.clients.forEach((client) => {
+          client.notify = jest.fn(() => true);
         });
         client3.notify = jest.fn(() => false);
 
         const message = { id: uuidv4(), key: "test-key", data: "test-data" };
-        const results = notificationRoom.notifyClients({ message });
 
-        expect(results).toHaveLength(4);
-        expect(results).toEqual(
-          expect.arrayContaining([{ id: client1.id, notified: true, message }]),
-        );
-        expect(results).toEqual(
-          expect.arrayContaining([{ id: client2.id, notified: true, message }]),
-        );
-        expect(results).toEqual(
-          expect.arrayContaining([{ id: client3.id, notified: false, message }]),
-        );
-        expect(results).toEqual(
-          expect.arrayContaining([{ id: client4.id, notified: true, message }]),
-        );
+        expect(sortById(notificationRoom.notifyClients({ message })))
+          .toEqual(sortById([
+            { id: client1.id, notified: true, message },
+            { id: client2.id, notified: true, message },
+            { id: client3.id, notified: false, message },
+            { id: client4.id, notified: true, message },
+          ]));
       });
 
       it("only notifies the clients specified", async () => {
