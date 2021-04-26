@@ -1,4 +1,5 @@
 import Room from "./room";
+import { getListeners, attachListener } from "./eventHandlers/lobbyRoom";
 import messages, { keys as messageKeys } from "./messages";
 
 const lobbyName = "LOBBY";
@@ -15,11 +16,20 @@ export default class Lobby extends Room {
   }
 
   createRoom({ name, clients } = {}) {
+    // create new room
     const room = new Room({ name });
-    if (clients) {
-      clients.forEach((client) => room.addClient({ client }));
-    }
+
+    // add event listeners for room events
+    getListeners({ lobby: this })
+      .forEach((listener) => attachListener({ room, listener }));
+
+    // add clients to new room
+    clients?.forEach((client) => room.addClient({ client }));
+
+    // add room to looby's room list
     this.#rooms = [...this.#rooms, room];
+
+    // return the new room
     return room;
   }
 

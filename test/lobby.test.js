@@ -7,6 +7,7 @@ const fakeSocket = () => ({
   id: uuidv4(),
   write: jest.fn(() => true),
   on: jest.fn(),
+  removeAllListeners: () => {},
   pipe: () => ({ on: jest.fn() }),
 });
 
@@ -93,6 +94,54 @@ describe("Lobby", () => {
           room: room.toJSON(),
         },
       }));
+    });
+  });
+
+  describe("when handling room events", () => {
+    let clients;
+    let lobby;
+    beforeEach(() => {
+      lobby = new Lobby();
+      clients = [
+        new Client({ socket: fakeSocket() }),
+        new Client({ socket: fakeSocket() }),
+        new Client({ socket: fakeSocket() }),
+        new Client({ socket: fakeSocket() }),
+      ];
+    });
+
+    describe("getting the remove client message", () => {
+      it("adds the removed client back into the lobby's client list", async () => {
+        const addClientSpy = jest.spyOn(lobby, "addClient");
+        const room = lobby.createRoom({
+          name: "test-room",
+          clients,
+        });
+
+        room
+          .emitter
+          .emit("removed-client", clients[0]);
+
+        expect(addClientSpy)
+          .toHaveBeenCalledWith({ client: clients[0] });
+      });
+    });
+
+    describe("getting the disconnect client message", () => {
+      it("emits the disconnect client message", async () => {
+        const lobbyEmitterSpy = jest.spyOn(lobby.emitter, "emit");
+        const room = lobby.createRoom({
+          name: "test-room",
+          clients,
+        });
+
+        room
+          .emitter
+          .emit("disconnect-client", clients[0]);
+
+        expect(lobbyEmitterSpy)
+          .toHaveBeenCalledWith("disconnect-client", clients[0]);
+      });
     });
   });
 });
