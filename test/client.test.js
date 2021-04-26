@@ -84,44 +84,50 @@ describe("Client", () => {
   });
 
   describe("when receiving socket messages", () => {
-    describe("with leave-room message", () => {
-      let defaultServer;
-      let defaultPort;
-      let eventHandlers;
-      beforeEach(async () => {
-        defaultPort = 3334;
-        eventHandlers = new Map();
-        eventHandlers.set("connection", jest.fn());
-        eventHandlers.set("listening", jest.fn());
-        eventHandlers.set("close", jest.fn());
-        eventHandlers.set("error", jest.fn());
+    let defaultServer;
+    let defaultPort;
+    let eventHandlers;
+    let client;
+    let socket;
 
-        defaultServer = new Server({
-          port: defaultPort,
-          eventHandlers,
-        });
+    beforeEach(async () => {
+      defaultPort = 3334;
+      eventHandlers = new Map();
+      eventHandlers.set("connection", jest.fn());
+      eventHandlers.set("listening", jest.fn());
+      eventHandlers.set("close", jest.fn());
+      eventHandlers.set("error", jest.fn());
+
+      defaultServer = new Server({
+        port: defaultPort,
+        eventHandlers,
       });
 
-      afterEach(async () => defaultServer?.close());
+      await defaultServer.listen();
 
+      socket = testSocket();
+      client = await new Promise((resolve) => {
+        socket
+          .pipe(split2(JSON.parse))
+          .on("data", ({ key, id }) => {
+            if (key === messageKeys.SERVER_GREET) {
+              resolve(defaultServer.getClient({ id }));
+            }
+          });
+
+        socket.connect(defaultServer);
+      });
+
+      client.emitter = { emit: jest.fn() };
+    });
+
+    afterEach(async () => {
+      await socket.end();
+      await defaultServer?.close();
+    });
+
+    describe("with leave-room message", () => {
       it("emits the leave room event", async () => {
-        await defaultServer.listen();
-
-        const socket = testSocket();
-        const client = await new Promise((resolve) => {
-          socket
-            .pipe(split2(JSON.parse))
-            .on("data", ({ key, id }) => {
-              if (key === messageKeys.SERVER_GREET) {
-                resolve(defaultServer.getClient({ id }));
-              }
-            });
-
-          socket.connect(defaultServer);
-        });
-
-        client.emitter = { emit: jest.fn() };
-
         const message = { key: "leave-room" };
         await new Promise((resolve) => {
           socket
@@ -135,9 +141,34 @@ describe("Client", () => {
           socket.write(`${JSON.stringify(message)}\n`);
         });
 
-        expect(client.emitter.emit).toHaveBeenCalledTimes(1);
-        expect(client.emitter.emit).toHaveBeenCalledWith("leave-room");
-        socket.end();
+        expect(client.emitter.emit)
+          .toHaveBeenCalledTimes(1);
+
+        expect(client.emitter.emit)
+          .toHaveBeenCalledWith("leave-room");
+      });
+    });
+
+    describe("with the disconnect message", () => {
+      it("emits the disconnect message", async () => {
+        const message = { key: "disconnect" };
+        await new Promise((resolve) => {
+          socket
+            .pipe(split2(JSON.parse))
+            .on("data", ({ key, type }) => {
+              if (key === message.key && type === "ACK") {
+                resolve();
+              }
+            });
+
+          socket.write(`${JSON.stringify(message)}\n`);
+        });
+
+        expect(client.emitter.emit)
+          .toHaveBeenCalledTimes(1);
+
+        expect(client.emitter.emit)
+          .toHaveBeenCalledWith("disconnect");
       });
     });
   });

@@ -1,5 +1,5 @@
 import { EventEmitter } from "events";
-import split2 from "split2";
+import { getListeners, attachListener } from "./eventHandlers/clientSocket";
 
 const idRegEx = new RegExp(/^[0-9A-F]{8}-[0-9A-F]{4}-4[0-9A-F]{3}-[89AB][0-9A-F]{3}-[0-9A-F]{12}$/i);
 
@@ -28,23 +28,13 @@ export default class Client {
       "ready",
       "timeout",
     ].forEach((event) => this.socket.on(event, () => {}));
-    // eslint-disable-next-line no-console
-    this.socket.on("error", console.error);
 
-    this.socket
-      .pipe(split2(JSON.parse))
-      .on("data", ({ key, data }) => {
-        if (key === "leave-room") {
-          this.emitter.emit("leave-room");
-        }
-
-        this.socket.write(`${JSON.stringify({
-          key,
-          data,
-          id: this.socket.id,
-          type: "ACK",
-        })}\n`);
-      });
+    // attach listeners to client.socket
+    getListeners({ client: this })
+      .forEach((listener) => attachListener({
+        socket: this.socket,
+        listener,
+      }));
   }
 
   get id() {
