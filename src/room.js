@@ -65,6 +65,7 @@ export default class Room {
   notifyClients({ message, clients }) {
     const targetClientIds = (clients || this.clients)
       .map(({ id }) => id);
+
     return this.clients.reduce((acc, client) => {
       if (targetClientIds.includes(client.id)) {
         acc.push({

@@ -171,5 +171,39 @@ describe("Client", () => {
           .toHaveBeenCalledWith("disconnect");
       });
     });
+
+    describe("with the game event message with the game data", () => {
+      it("emits the game event message", async () => {
+        const message = {
+          key: "game-event",
+          data: {
+            gameItem1: 1,
+            gameItem2: "two",
+            moreItems: ["a", "b", "c"],
+            last: {
+              finalThing: true,
+            },
+          },
+        };
+
+        await new Promise((resolve) => {
+          socket
+            .pipe(split2(JSON.parse))
+            .on("data", ({ key, type }) => {
+              if (key === message.key && type === "ACK") {
+                resolve();
+              }
+            });
+
+          socket.write(`${JSON.stringify(message)}\n`);
+        });
+
+        expect(client.emitter.emit)
+          .toHaveBeenCalledTimes(1);
+
+        expect(client.emitter.emit)
+          .toHaveBeenCalledWith("game-event", message.data);
+      });
+    });
   });
 });

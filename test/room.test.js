@@ -284,5 +284,42 @@ describe("Room", () => {
       expect(room.emitter.emit)
         .toHaveBeenCalledWith("remove-client", client);
     });
+
+    it.only("sends the game data event data to other clients in the room", async () => {
+      const otherClients = [
+        new Client({ socket: fakeSocket() }),
+        new Client({ socket: fakeSocket() }),
+        new Client({ socket: fakeSocket() }),
+        new Client({ socket: fakeSocket() }),
+      ];
+      const client = new Client({ socket: fakeSocket() });
+      const room = new Room();
+      const gameData = {
+        clientId: client.id,
+        event: {
+          key: "jump",
+          position: {
+            x: 123,
+            y: 321,
+          },
+        },
+      };
+
+      otherClients.forEach((c) => room.addClient({ client: c }));
+      room.addClient({ client });
+
+      const notifyClientSpy = jest.spyOn(room, "notifyClients");
+
+      client.emitter.emit("game-event", gameData);
+
+      expect(notifyClientSpy)
+        .toHaveBeenCalledTimes(1);
+
+      expect(notifyClientSpy)
+        .toHaveBeenCalledWith({
+          message: gameData,
+          clients: otherClients,
+        });
+    });
   });
 });

@@ -25,4 +25,14 @@ export const getListeners = ({ client, room }) => [
       room.emitter.emit("disconnect-client", client);
     },
   },
+  {
+    name: "game-event",
+    handler: (data) => {
+      const clients = room
+        .clients
+        .filter((c) => c.id !== data.clientId);
+
+      room.notifyClients({ message: data, clients });
+    },
+  },
 ];

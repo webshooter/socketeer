@@ -9,6 +9,10 @@ const dataEventHandlers = [
     key: "disconnect",
     handler: ({ client }) => client.emitter.emit("disconnect"),
   },
+  {
+    key: "game-event",
+    handler: ({ client, data }) => client.emitter.emit("game-event", data),
+  },
 ];
 
 const acknowledgement = ({ key, data, id }) => ({
