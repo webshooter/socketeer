@@ -1,4 +1,5 @@
 import split2 from "split2";
+import logger from "../logger";
 
 const dataEventHandlers = [
   {
@@ -60,7 +61,6 @@ export const getListeners = ({ client }) => [
   },
   {
     name: "error",
-    // eslint-disable-next-line no-console
-    handler: (error) => console.error(error),
+    handler: (error) => logger.info(error),
   },
 ];

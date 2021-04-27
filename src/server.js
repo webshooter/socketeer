@@ -1,5 +1,6 @@
 import net from "net";
 import { v4 as uuidv4 } from "uuid";
+import logger from "./logger";
 import Client from "./client";
 import Lobby from "./lobby";
 import messages, { keys as messageKeys } from "./messages";
@@ -10,8 +11,7 @@ const defaultEventHandlers = new Map();
 defaultEventHandlers.set("connection", noop);
 defaultEventHandlers.set("close", noop);
 defaultEventHandlers.set("listening", noop);
-// eslint-disable-next-line no-console
-defaultEventHandlers.set("error", (err) => console.error(err));
+defaultEventHandlers.set("error", (err) => logger.info(err));
 
 export default class Server {
   #clients = new Map();
@@ -65,6 +65,7 @@ export default class Server {
     return new Promise((resolve, reject) => {
       if (this.netServer) {
         this.netServer.listen(this.port, () => {
+          logger.info({ env: process.env.NODE_ENV }, `Server listening on port ${this.port}`);
           resolve(this.netServer);
         });
       } else {
