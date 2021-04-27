@@ -1,7 +1,17 @@
 import net from "net";
+import { v4 as uuidv4 } from "uuid";
 import split2 from "split2";
 import Server from "../src/server";
 import { keys as messageKeys } from "../src/messages";
+import Client from "../src/client";
+
+const fakeSocket = () => ({
+  id: uuidv4(),
+  write: jest.fn(() => true),
+  on: jest.fn(),
+  removeAllListeners: () => {},
+  pipe: () => ({ on: jest.fn() }),
+});
 
 describe("server", () => {
   let defaultServer;
@@ -80,7 +90,7 @@ describe("server", () => {
       });
     });
 
-    it("returns the server's client object by id", async () => {
+    it("returns a client by id", async () => {
       await defaultServer.listen();
 
       const socket = new net.Socket();
@@ -207,6 +217,21 @@ describe("server", () => {
       server.netServer.emit("error", new Error("Test Error"));
       expect(eventHandlers.get("error"))
         .toHaveBeenCalledTimes(1);
+    });
+
+    describe("when getting messages from the lobby's emitter", () => {
+      describe("with the disconnect-client message", () => {
+        it("closes the client's socket", async () => {
+          await server.listen();
+
+          const newClient = new Client({ socket: fakeSocket() });
+          newClient.socket.end = jest.fn();
+
+          server.lobby.emitter.emit("disconnect-client", newClient);
+
+          expect(newClient.socket.end).toHaveBeenCalledTimes(1);
+        });
+      });
     });
   });
 });

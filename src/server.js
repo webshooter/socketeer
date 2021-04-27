@@ -26,6 +26,9 @@ export default class Server {
     this.eventHandlers = eventHandlers;
 
     this.lobby = new Lobby();
+    this.lobby.emitter.on("disconnect-client", (client) => {
+      client.socket.end();
+    });
 
     this.netServer = net.createServer();
     this.netServer.maxConnections = this.maxConnections;
