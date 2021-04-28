@@ -26,6 +26,12 @@ export default class Lobby extends Room {
     // add clients to new room
     clients?.forEach((client) => room.addClient({ client }));
 
+    // remove room clients from lobby clients list
+    room
+      .clients
+      .map((client) => client.id)
+      .forEach((id) => this.removeClient({ id }));
+
     // add room to looby's room list
     this.#rooms = [...this.#rooms, room];
 

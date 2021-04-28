@@ -11,6 +11,8 @@ const fakeSocket = () => ({
   pipe: () => ({ on: jest.fn() }),
 });
 
+const sortById = (array) => array.sort((a, b) => a.id - b.id);
+
 describe("Lobby", () => {
   describe("initializing ", () => {
     it("creates the lobby", async () => {
@@ -45,10 +47,27 @@ describe("Lobby", () => {
       const room = lobby.createRoom({ clients });
       expect(lobby.rooms).toHaveLength(1);
 
-      expect(room.clients).toHaveLength(4);
-      clients.forEach((client) => expect(room.clients).toEqual(
-        expect.arrayContaining([client]),
-      ));
+      expect(sortById(room.clients)).toEqual(sortById(clients));
+    });
+
+    it("removes provided clients from it's list of clients", async () => {
+      const lobby = new Lobby();
+      expect(lobby.rooms).toHaveLength(0);
+
+      const clients = [
+        new Client({ socket: fakeSocket() }),
+        new Client({ socket: fakeSocket() }),
+        new Client({ socket: fakeSocket() }),
+        new Client({ socket: fakeSocket() }),
+      ];
+
+      clients.forEach((client) => lobby.addClient({ client }));
+      expect(lobby.clients).toHaveLength(4);
+
+      const room = lobby.createRoom({ clients });
+      expect(lobby.rooms).toHaveLength(1);
+      expect(lobby.clients).toHaveLength(0);
+      expect(sortById(room.clients)).toEqual(sortById(clients));
     });
   });
 
