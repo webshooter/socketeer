@@ -4,10 +4,12 @@ import Room from "../src/room";
 describe("messages", () => {
   let error;
   let room;
+  let client;
 
   beforeEach(() => {
     error = "error message";
     room = new Room({ name: "the room" });
+    client = { id: "12345asdf" };
   });
 
   describe("SERVER_GREET", () => {
@@ -49,6 +51,19 @@ describe("messages", () => {
       const message = messages.get(keys.ROOM_GREET);
 
       expect(message({ room, error })).toEqual(expected);
+    });
+  });
+
+  describe("NEW_PLAYER", () => {
+    it("sends the new client's id", async () => {
+      const expected = {
+        key: keys.NEW_PLAYER,
+        newPlayerId: client.id,
+        room: room.toJSON(),
+      };
+      const message = messages.get(keys.NEW_PLAYER);
+
+      expect(message({ client, room })).toEqual(expected);
     });
   });
 });
