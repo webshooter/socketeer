@@ -1,8 +1,9 @@
 import bunyan from "bunyan";
+import config from "./config";
 
 const logger = bunyan.createLogger({ name: "game-server" });
 
-const level = process.env.NODE_ENV === "test"
+const level = config.nodeEnv === "test" && !config.testLogging
   ? bunyan.FATAL + 1
   : bunyan.INFO;
 
