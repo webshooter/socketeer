@@ -38,6 +38,22 @@ describe("Room", () => {
     });
   });
 
+  describe("clientCount", () => {
+    it("returns the number of current cllients in the room", async () => {
+      const room = new Room();
+      const clients = [
+        new Client({ socket: fakeSocket() }),
+        new Client({ socket: fakeSocket() }),
+        new Client({ socket: fakeSocket() }),
+        new Client({ socket: fakeSocket() }),
+        new Client({ socket: fakeSocket() }),
+      ];
+      clients.forEach((client) => room.addClient({ client }));
+
+      expect(room.clientCount).toEqual(clients.length);
+    });
+  });
+
   describe("when creating a room", () => {
     it("creates a new room with an id", async () => {
       const { id } = new Room();

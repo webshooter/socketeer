@@ -23,7 +23,11 @@ export default class Room {
   }
 
   get clients() {
-    return this.#clients;
+    return this.#clients || [];
+  }
+
+  get clientCount() {
+    return this.#clients.length || 0;
   }
 
   addClient({ client, sendGreeting = true }) {
