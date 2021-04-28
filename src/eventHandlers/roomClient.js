@@ -26,6 +26,10 @@ export const getListeners = ({ client, room }) => [
     },
   },
   {
+    name: "join-game",
+    handler: () => room.joinRoom?.({ client }),
+  },
+  {
     name: "game-event",
     handler: (data) => {
       const clients = room

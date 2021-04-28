@@ -116,6 +116,100 @@ describe("Lobby", () => {
     });
   });
 
+  describe("joinRoom", () => {
+    it("joins the room specified in the game data if it exists", async () => {
+      const lobby = new Lobby();
+      const existingRoom = lobby.createRoom();
+      const client = new Client({ socket: fakeSocket() });
+      const addClientSpy = jest.spyOn(existingRoom, "addClient");
+
+      lobby.joinRoom({ client, data: { roomId: existingRoom.id } });
+      expect(addClientSpy).toHaveBeenCalledWith({ client });
+    });
+
+    it("returns the room after client has joined", async () => {
+      const lobby = new Lobby();
+      const existingRoom = lobby.createRoom();
+      const client = new Client({ socket: fakeSocket() });
+
+      expect(existingRoom.clientCount).toEqual(0);
+
+      const updatedRoom = lobby.joinRoom({
+        client,
+        data: { roomId: existingRoom.id },
+      });
+      expect(updatedRoom.id).toEqual(existingRoom.id);
+      expect(existingRoom.clientCount).toEqual(1);
+    });
+
+    it("sends the room-not-found message if the room isn't found", async () => {
+      const lobby = new Lobby();
+      const client = new Client({ socket: fakeSocket() });
+      const notifyClientsSpy = jest.spyOn(lobby, "notifyClients");
+      const roomId = uuidv4();
+
+      lobby.createRoom();
+      lobby.joinRoom({ client, data: { roomId } });
+
+      expect(notifyClientsSpy).toHaveBeenCalledWith({
+        message: { key: messageKeys.ROOM_NOT_FOUND, roomId },
+        clients: [client],
+      });
+    });
+
+    it("joins the first available room waiting for a new player", async () => {
+      const lobby = new Lobby();
+      const waitingClient = new Client({ socket: fakeSocket() });
+      const newClient = new Client({ socket: fakeSocket() });
+
+      // make an empty room to make sure the code find the right room
+      const fullRoom = lobby.createRoom({
+        clients: [
+          new Client({ socket: fakeSocket() }),
+          new Client({ socket: fakeSocket() }),
+        ],
+      });
+
+      // create a room and add a client
+      const room = lobby.createRoom({ clients: [waitingClient] });
+      const addClientSpy = jest.spyOn(room, "addClient");
+
+      expect(fullRoom.clientCount).toEqual(2);
+      expect(room.clientCount).toEqual(1);
+
+      const resultRoom = lobby.joinRoom({ client: newClient });
+
+      expect(fullRoom.clientCount).toEqual(2);
+      expect(resultRoom.id).toEqual(room.id);
+      expect(resultRoom.clientCount).toEqual(2);
+      expect(addClientSpy).toHaveBeenCalledWith({ client: newClient });
+    });
+
+    it("creates and joins a new room when no rooms are waiting for players", async () => {
+      const client = new Client({ socket: fakeSocket() });
+
+      const lobby = new Lobby();
+      expect(lobby.rooms).toHaveLength(0);
+
+      // make an empty room to make sure the code find the right room
+      const fullRoom = lobby.createRoom({
+        clients: [
+          new Client({ socket: fakeSocket() }),
+          new Client({ socket: fakeSocket() }),
+        ],
+      });
+      expect(fullRoom.clientCount).toEqual(2);
+      expect(lobby.rooms).toEqual([fullRoom]);
+
+      const resultRoom = lobby.joinRoom({ client });
+
+      expect(fullRoom.clientCount).toEqual(2);
+      expect(resultRoom.id).not.toEqual(fullRoom.id);
+      expect(resultRoom.clients).toEqual([client]);
+      expect(sortById(lobby.rooms)).toEqual(sortById([fullRoom, resultRoom]));
+    });
+  });
+
   describe("when handling room events", () => {
     let clients;
     let lobby;

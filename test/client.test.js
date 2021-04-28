@@ -205,5 +205,35 @@ describe("Client", () => {
           .toHaveBeenCalledWith("game-event", message.data);
       });
     });
+
+    describe("with the join game message", () => {
+      it("emits the join game message", async () => {
+        const message = {
+          key: "join-game",
+          data: {
+            clientId: socket.id,
+            roomId: uuidv4(),
+          },
+        };
+
+        await new Promise((resolve) => {
+          socket
+            .pipe(split2(JSON.parse))
+            .on("data", ({ key, type }) => {
+              if (key === message.key && type === "ACK") {
+                resolve();
+              }
+            });
+
+          socket.write(`${JSON.stringify(message)}\n`);
+        });
+
+        expect(client.emitter.emit)
+          .toHaveBeenCalledTimes(1);
+
+        expect(client.emitter.emit)
+          .toHaveBeenCalledWith("join-game", message.data);
+      });
+    });
   });
 });

@@ -4,6 +4,15 @@ import messages, { keys as messageKeys } from "./messages";
 
 const lobbyName = "LOBBY";
 
+const findRoom = ({ rooms, roomId, fullCount = 2 }) => {
+  if (roomId) {
+    const room = rooms.find((rm) => rm.id === roomId);
+    return room ? { room } : { error: messageKeys.ROOM_NOT_FOUND };
+  }
+
+  return { room: rooms.find((rm) => rm.clientCount < fullCount) };
+};
+
 export default class Lobby extends Room {
   #rooms = [];
 
@@ -13,6 +22,37 @@ export default class Lobby extends Room {
 
   get rooms() {
     return this.#rooms;
+  }
+
+  joinRoom({ client, data }) {
+    // eslint-disable-next-line prefer-const
+    let { room, error } = findRoom({
+      rooms: this.rooms,
+      roomId: data?.roomId,
+    });
+
+    if (error === messageKeys.ROOM_NOT_FOUND) {
+      // unable to find the requested room, send an error
+      const getMessage = messages.get(messageKeys.ROOM_NOT_FOUND);
+      this.notifyClients({
+        message: getMessage({ id: data.roomId }),
+        clients: [client],
+      });
+
+      return null;
+    }
+
+    if (!room) {
+      room = this.createRoom({ clients: [] });
+    }
+
+    // remove the client from the lobby's client list
+    this.removeClient({ client });
+
+    // add client to room
+    room.addClient({ client });
+
+    return room;
   }
 
   createRoom({ name, clients } = {}) {

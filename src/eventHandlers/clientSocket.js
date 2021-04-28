@@ -11,6 +11,10 @@ const dataEventHandlers = [
     handler: ({ client }) => client.emitter.emit("disconnect"),
   },
   {
+    key: "join-game",
+    handler: ({ client, data }) => client.emitter.emit("join-game", data),
+  },
+  {
     key: "game-event",
     handler: ({ client, data }) => client.emitter.emit("game-event", data),
   },
