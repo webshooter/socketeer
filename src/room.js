@@ -56,6 +56,14 @@ export default class Room {
       });
     }
 
+    // send new player message to the
+    // other clients in the room
+    const newPlayerMessage = messages.get(messageKeys.NEW_PLAYER);
+    this.notifyClients({
+      message: newPlayerMessage({ client, room: this }),
+      clients: this.clients.filter((c) => c.id !== client.id),
+    });
+
     return this.clients;
   }
 

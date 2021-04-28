@@ -1,6 +1,7 @@
 import { v4 as uuidv4 } from "uuid";
 import Room from "../src/room";
 import Client from "../src/client";
+import messages, { keys as messageKeys } from "../src/messages";
 
 const isValidId = ({ id }) => (
   new RegExp(/^[0-9A-F]{8}-[0-9A-F]{4}-4[0-9A-F]{3}-[89AB][0-9A-F]{3}-[0-9A-F]{12}$/i)
@@ -149,6 +150,29 @@ describe("Room", () => {
         const notifySpy = jest.spyOn(client1, "notify");
         defaultRoom.addClient({ client: client1, sendGreeting: false });
         expect(notifySpy).toHaveBeenCalledTimes(0);
+      });
+
+      it("sends a new player greeting to only the other clients in the room", async () => {
+        const otherClients = [client1, client2, client3];
+        otherClients.forEach((client) => defaultRoom.addClient({ client }));
+
+        const spies = otherClients.map((client) => jest.spyOn(client, "notify"));
+        const newClientSpy = jest.spyOn(client4, "notify");
+
+        defaultRoom.addClient({ client: client4 });
+
+        const message = messages
+          .get(messageKeys.NEW_PLAYER)({
+            client: client4,
+            room: defaultRoom,
+          });
+
+        spies.forEach((spy) => {
+          expect(spy).toHaveBeenCalledTimes(1);
+          expect(spy).toHaveBeenCalledWith({ message });
+        });
+
+        expect(newClientSpy).not.toHaveBeenCalledWith({ message });
       });
     });
 
@@ -301,7 +325,7 @@ describe("Room", () => {
         .toHaveBeenCalledWith("remove-client", client);
     });
 
-    it.only("sends the game data event data to other clients in the room", async () => {
+    it("sends the game data event data to other clients in the room", async () => {
       const otherClients = [
         new Client({ socket: fakeSocket() }),
         new Client({ socket: fakeSocket() }),
