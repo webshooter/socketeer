@@ -66,4 +66,17 @@ describe("messages", () => {
       expect(message({ client, room })).toEqual(expected);
     });
   });
+
+  describe("ROOM_NOT_FOUND", () => {
+    it("sends the missing room's id", async () => {
+      const id = "asdf1234";
+      const expected = {
+        key: keys.ROOM_NOT_FOUND,
+        roomId: id,
+      };
+      const message = messages.get(keys.ROOM_NOT_FOUND);
+
+      expect(message({ id })).toEqual(expected);
+    });
+  });
 });
