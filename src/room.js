@@ -75,14 +75,23 @@ export default class Room {
   }
 
   removeClient({ id }) {
+    const client = this.#clients
+      .find((c) => id === c.id);
+
+    if (!client) {
+      return this.clients;
+    }
+
     this.#clients = this.#clients
-      .filter((client) => id !== client.id);
+      .filter((c) => id !== c.id);
 
     logger.info({
       event: "CLIENT_REMOVED_ROOM",
       client: { id },
       room: this.toJSON(),
     });
+
+    this.emitter.emit("removed-client", client, this);
 
     return this.clients;
   }
