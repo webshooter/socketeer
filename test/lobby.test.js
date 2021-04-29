@@ -238,6 +238,35 @@ describe("Lobby", () => {
         expect(addClientSpy)
           .toHaveBeenCalledWith({ client: clients[0] });
       });
+
+      it("removes the room if it is empty", async () => {
+        const removeRoomSpy = jest.spyOn(lobby, "removeRoom");
+        expect(lobby.rooms).toHaveLength(0);
+
+        const oneClientRoom = lobby.createRoom({
+          name: "test-room",
+          clients: [clients[0]],
+        });
+
+        const emptyRoom = lobby.createRoom({
+          name: "empty-test-room",
+        });
+
+        expect(lobby.rooms).toHaveLength(2);
+        expect(oneClientRoom.clientCount).toEqual(1);
+        expect(emptyRoom.clientCount).toEqual(0);
+
+        oneClientRoom
+          .emitter
+          .emit("removed-client", clients[0], oneClientRoom);
+
+        emptyRoom
+          .emitter
+          .emit("removed-client", clients[0], emptyRoom);
+
+        expect(removeRoomSpy)
+          .toHaveBeenCalledWith(emptyRoom);
+      });
     });
 
     describe("getting the disconnect client message", () => {

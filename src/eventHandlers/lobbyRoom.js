@@ -13,7 +13,13 @@ export const attachListener = ({
 export const getListeners = ({ lobby }) => [
   {
     name: "removed-client",
-    handler: (client) => lobby.addClient({ client }),
+    handler: (client, room) => {
+      lobby.addClient({ client });
+
+      if (room?.clientCount < 1) {
+        lobby.removeRoom(room);
+      }
+    },
   },
   {
     name: "disconnect-client",
