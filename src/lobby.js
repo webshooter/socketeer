@@ -91,17 +91,20 @@ export default class Lobby extends Room {
 
   removeRoom({ id }) {
     const room = this.#rooms.find((r) => id === r.id);
-    if (room) {
-      const message = messages.get(messageKeys.ROOM_CLOSING);
-      room.notifyClients({ message: message({ room }) });
-      this.#rooms = this.#rooms
-        .filter((r) => room.id !== r.id);
 
-      logger.info({
-        event: "ROOM_REMOVED",
-        room: room.toJSON(),
-      });
+    if (!room) {
+      return this.rooms;
     }
+
+    const message = messages.get(messageKeys.ROOM_CLOSING);
+    room.notifyClients({ message: message({ room }) });
+    this.#rooms = this.#rooms
+      .filter((r) => room.id !== r.id);
+
+    logger.info({
+      event: "ROOM_REMOVED",
+      room: room.toJSON(),
+    });
 
     return this.rooms;
   }
