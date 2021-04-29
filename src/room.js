@@ -2,6 +2,7 @@ import { v4 as uuidv4 } from "uuid";
 import { EventEmitter } from "events";
 import { getListeners, attachListener } from "./eventHandlers/roomClient";
 import messages, { keys as messageKeys } from "./messages";
+import logger from "./logger";
 
 const idRegEx = new RegExp(/^[0-9A-F]{8}-[0-9A-F]{4}-4[0-9A-F]{3}-[89AB][0-9A-F]{3}-[0-9A-F]{12}$/i);
 const isValidName = ({ name }) => (name && name.toString().length > 0);
@@ -64,12 +65,24 @@ export default class Room {
       clients: this.clients.filter((c) => c.id !== client.id),
     });
 
+    logger.info({
+      event: "CLIENT_JOINED_ROOM",
+      client: { id: client.id },
+      room: this.toJSON(),
+    });
+
     return this.clients;
   }
 
   removeClient({ id }) {
     this.#clients = this.#clients
       .filter((client) => id !== client.id);
+
+    logger.info({
+      event: "CLIENT_REMOVED_ROOM",
+      client: { id },
+      room: this.toJSON(),
+    });
 
     return this.clients;
   }

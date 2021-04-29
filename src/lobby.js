@@ -1,6 +1,7 @@
 import Room from "./room";
 import { getListeners, attachListener } from "./eventHandlers/lobbyRoom";
 import messages, { keys as messageKeys } from "./messages";
+import logger from "./logger";
 
 const lobbyName = "LOBBY";
 
@@ -18,6 +19,10 @@ export default class Lobby extends Room {
 
   constructor() {
     super({ name: lobbyName });
+    logger.info({
+      event: "LOBBY_CREATED",
+      lobby: this.toJSON(),
+    });
   }
 
   get rooms() {
@@ -75,6 +80,11 @@ export default class Lobby extends Room {
     // add room to looby's room list
     this.#rooms = [...this.#rooms, room];
 
+    logger.info({
+      event: "ROOM_CREATED",
+      room: room.toJSON(),
+    });
+
     // return the new room
     return room;
   }
@@ -86,6 +96,11 @@ export default class Lobby extends Room {
       room.notifyClients({ message: message({ room }) });
       this.#rooms = this.#rooms
         .filter((r) => room.id !== r.id);
+
+      logger.info({
+        event: "ROOM_REMOVED",
+        room: room.toJSON(),
+      });
     }
 
     return this.rooms;

@@ -27,6 +27,10 @@ export default class Server {
 
     this.lobby = new Lobby();
     this.lobby.emitter.on("disconnect-client", (client) => {
+      logger.info({
+        event: "CLIENT_DISCONNECT",
+        client: { id: client.id },
+      });
       client.socket.end();
     });
 
@@ -50,6 +54,11 @@ export default class Server {
       client.notify({
         message: messages.get(messageKeys.SERVER_GREET)(),
       });
+
+      logger.info({
+        event: "CONNECTION",
+        client: client.id,
+      });
     });
   }
 
@@ -65,7 +74,13 @@ export default class Server {
     return new Promise((resolve, reject) => {
       if (this.netServer) {
         this.netServer.listen(this.port, () => {
-          logger.info({ env: process.env.NODE_ENV }, `Server listening on port ${this.port}`);
+          logger.info({
+            env: process.env.NODE_ENV,
+            server: {
+              port: this.port,
+              message: `Server listening on port ${this.port}`,
+            },
+          });
           resolve(this.netServer);
         });
       } else {
@@ -77,6 +92,9 @@ export default class Server {
   async close() {
     return new Promise((resolve, reject) => {
       if (this.netServer) {
+        logger.info({
+          message: "Server closing",
+        });
         this.netServer.close(() => resolve(this.netServer));
       } else {
         reject(new Error("Error closing server!"));
