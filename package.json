@@ -2,8 +2,9 @@
   "name": "socketeer",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
+  "main": "src/index.js",
   "scripts": {
+    "start-dev": "NODE_ENV=development babel-node ./src/index.js",
     "test": "jest"
   },
   "keywords": [],
