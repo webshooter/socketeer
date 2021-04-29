@@ -1,7 +1,7 @@
 import bunyan from "bunyan";
 import config from "./config";
 
-const logger = bunyan.createLogger({ name: "game-server" });
+const logger = bunyan.createLogger({ name: "socketeer" });
 
 const level = config.nodeEnv === "test" && !config.testLogging
   ? bunyan.FATAL + 1
