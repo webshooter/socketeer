@@ -8,7 +8,7 @@ const idRegEx = new RegExp(/^[0-9A-F]{8}-[0-9A-F]{4}-4[0-9A-F]{3}-[89AB][0-9A-F]
 const isValidName = ({ name }) => (name && name.toString().length > 0);
 
 export default class Room {
-  #clients = [];
+  #clients = new Map();
 
   static isValidId({ id }) {
     return idRegEx.test(id);
@@ -24,11 +24,11 @@ export default class Room {
   }
 
   get clients() {
-    return this.#clients || [];
+    return Array.from(this.#clients.values());
   }
 
   get clientCount() {
-    return this.#clients.length || 0;
+    return this.#clients.size || 0;
   }
 
   addClient({ client, sendGreeting = true }) {
@@ -46,7 +46,7 @@ export default class Room {
       }));
 
     // add new client to this room's client list
-    this.#clients = [...this.#clients, client];
+    this.#clients.set(client.id, client);
 
     // send room greeting message to new client
     if (sendGreeting) {
@@ -74,30 +74,24 @@ export default class Room {
     return this.clients;
   }
 
-  removeClient({ id }) {
-    const client = this.#clients
-      .find((c) => id === c.id);
+  removeClient({ client }) {
+    const removed = this.#clients.delete(client.id);
 
-    if (!client) {
-      return this.clients;
+    if (removed) {
+      logger.info({
+        event: "CLIENT_REMOVED_ROOM",
+        client: { id: client.id },
+        room: this.toJSON(),
+      });
+
+      this.emitter.emit("removed-client", client, this);
     }
-
-    this.#clients = this.#clients
-      .filter((c) => id !== c.id);
-
-    logger.info({
-      event: "CLIENT_REMOVED_ROOM",
-      client: { id },
-      room: this.toJSON(),
-    });
-
-    this.emitter.emit("removed-client", client, this);
 
     return this.clients;
   }
 
   notifyClients({ message, clients }) {
-    const targetClientIds = (clients || this.clients)
+    const targetClientIds = (clients || Array.from(this.clients.values()))
       .map(({ id }) => id);
 
     return this.clients.reduce((acc, client) => {
@@ -117,7 +111,7 @@ export default class Room {
       id: this.id,
       createdAt: this.createdAt,
       name: this.name,
-      clients: this.#clients.map((client) => client.id),
+      clients: Array.from(this.#clients.values()).map((client) => client.id),
     };
   }
 }

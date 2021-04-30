@@ -184,7 +184,7 @@ describe("Room", () => {
         expect(sortById(defaultRoom.clients))
           .toEqual(sortById([client1, client2, client3]));
 
-        defaultRoom.removeClient({ id: client2.id });
+        defaultRoom.removeClient({ client: client2 });
         expect(sortById(defaultRoom.clients))
           .toEqual(sortById([client1, client3]));
       });
@@ -200,16 +200,16 @@ describe("Room", () => {
         expect(sortById(defaultRoom.clients))
           .toEqual(sortById([client1, client2, client3, client4]));
 
-        expect(sortById(defaultRoom.removeClient({ id: client1.id })))
+        expect(sortById(defaultRoom.removeClient({ client: client1 })))
           .toEqual(sortById([client2, client3, client4]));
 
-        expect(sortById(defaultRoom.removeClient({ id: client2.id })))
+        expect(sortById(defaultRoom.removeClient({ client: client2 })))
           .toEqual(sortById([client3, client4]));
 
-        expect(sortById(defaultRoom.removeClient({ id: client3.id })))
+        expect(sortById(defaultRoom.removeClient({ client: client3 })))
           .toEqual(sortById([client4]));
 
-        expect(sortById(defaultRoom.removeClient({ id: client4.id })))
+        expect(sortById(defaultRoom.removeClient({ client: client4 })))
           .toEqual(sortById([]));
       });
     });

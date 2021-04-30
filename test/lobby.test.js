@@ -93,7 +93,7 @@ describe("Lobby", () => {
     it("removes the room from the room list", async () => {
       expect(lobby.rooms).toHaveLength(3);
 
-      const remainingRooms = lobby.removeRoom(room);
+      const remainingRooms = lobby.removeRoom({ room });
       expect(remainingRooms).toHaveLength(2);
       expect(lobby.rooms).toHaveLength(2);
 
@@ -105,7 +105,7 @@ describe("Lobby", () => {
     it("notifies room clients with room close message", async () => {
       const spies = clients.map((client) => jest.spyOn(client, "notify"));
 
-      lobby.removeRoom(room);
+      lobby.removeRoom({ room });
 
       spies.forEach((spy) => expect(spy).toHaveBeenCalledWith({
         message: {
@@ -117,7 +117,7 @@ describe("Lobby", () => {
   });
 
   describe("joinRoom", () => {
-    it("joins the room specified in the game data if it exists", async () => {
+    it.only("joins the room specified in the game data if it exists", async () => {
       const lobby = new Lobby();
       const existingRoom = lobby.createRoom();
       const client = new Client({ socket: fakeSocket() });
@@ -138,6 +138,7 @@ describe("Lobby", () => {
         client,
         data: { roomId: existingRoom.id },
       });
+
       expect(updatedRoom.id).toEqual(existingRoom.id);
       expect(existingRoom.clientCount).toEqual(1);
     });

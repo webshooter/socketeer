@@ -17,7 +17,7 @@ export const getListeners = ({ lobby }) => [
       lobby.addClient({ client });
 
       if (room?.clientCount < 1) {
-        lobby.removeRoom(room);
+        lobby.removeRoom({ room });
       }
     },
   },

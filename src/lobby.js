@@ -7,15 +7,18 @@ const lobbyName = "LOBBY";
 
 const findRoom = ({ rooms, roomId, fullCount = 2 }) => {
   if (roomId) {
-    const room = rooms.find((rm) => rm.id === roomId);
-    return room ? { room } : { error: messageKeys.ROOM_NOT_FOUND };
+    return rooms.has(roomId)
+      ? { room: rooms.get(roomId) }
+      : { error: messageKeys.ROOM_NOT_FOUND };
   }
 
-  return { room: rooms.find((rm) => rm.clientCount < fullCount) };
+  return {
+    room: Array.from(rooms.values()).find((room) => room.clientCount < fullCount),
+  };
 };
 
 export default class Lobby extends Room {
-  #rooms = [];
+  #rooms = new Map();
 
   constructor() {
     super({ name: lobbyName });
@@ -26,13 +29,13 @@ export default class Lobby extends Room {
   }
 
   get rooms() {
-    return this.#rooms;
+    return Array.from(this.#rooms.values());
   }
 
   joinRoom({ client, data }) {
     // eslint-disable-next-line prefer-const
     let { room, error } = findRoom({
-      rooms: this.rooms,
+      rooms: this.#rooms,
       roomId: data?.roomId,
     });
 
@@ -74,11 +77,10 @@ export default class Lobby extends Room {
     // remove room clients from lobby clients list
     room
       .clients
-      .map((client) => client.id)
-      .forEach((id) => this.removeClient({ id }));
+      .forEach((client) => this.removeClient({ client }));
 
     // add room to looby's room list
-    this.#rooms = [...this.#rooms, room];
+    this.#rooms.set(room.id, room);
 
     logger.info({
       event: "ROOM_CREATED",
@@ -89,22 +91,22 @@ export default class Lobby extends Room {
     return room;
   }
 
-  removeRoom({ id }) {
-    const room = this.#rooms.find((r) => id === r.id);
-
+  removeRoom({ room }) {
     if (!room) {
       return this.rooms;
     }
 
-    const message = messages.get(messageKeys.ROOM_CLOSING);
-    room.notifyClients({ message: message({ room }) });
-    this.#rooms = this.#rooms
-      .filter((r) => room.id !== r.id);
+    if (this.#rooms.has(room.id)) {
+      const message = messages.get(messageKeys.ROOM_CLOSING);
+      room.notifyClients({ message: message({ room }) });
 
-    logger.info({
-      event: "ROOM_REMOVED",
-      room: room.toJSON(),
-    });
+      this.#rooms.delete(room.id);
+
+      logger.info({
+        event: "ROOM_REMOVED",
+        room: room.toJSON(),
+      });
+    }
 
     return this.rooms;
   }
